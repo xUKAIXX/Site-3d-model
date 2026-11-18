@@ -12,6 +12,7 @@ const gallery = $('gallery');
 const pin = $('pin');
 const stage = $('stage-view');
 const canvas = $('view-3d');
+const detail = $('detail');
 const panels = [...document.querySelectorAll('[data-copy]')];
 const tabs = [...document.querySelectorAll('.chapter')];
 const posters = [...document.querySelectorAll('[data-poster]')];
@@ -38,6 +39,8 @@ let sceneDirty = true;
 let raw = 0;
 let progress = 0;
 let idleBuild;
+let magnify = 0;
+let magnifyGoal = 0;
 
 function silt() {
   const field = $('silt');
@@ -90,6 +93,7 @@ function updateProgress() {
   const t = smooth(clamp((raw - base - .075) / .85));
   const staticMotion = reducedMotion.matches;
   progress = staticMotion ? index : base + t;
+  if (magnifyGoal && (index !== active || Math.abs(raw - active) > .14)) setDetail(false);
   if (index !== active) activate(index);
   const distance = active - progress;
   $('copy-stack').style.setProperty('--text-opacity', 1 - .84 * smooth(clamp(Math.abs(distance) * 2)));
@@ -130,13 +134,20 @@ function render(now) {
     sceneDirty = true;
     animate = animate || !near(o.angle, o.goal) || !near(o.tilt, o.tiltGoal) || Math.abs(o.speed) > .031;
   });
+  if (!near(magnify, magnifyGoal)) {
+    magnify = near(magnify, magnifyGoal, .002) ? magnifyGoal : magnify + (magnifyGoal - magnify) * ease;
+    sceneDirty = true;
+    animate = animate || !near(magnify,magnifyGoal);
+  }
   if (sceneDirty) {
     sceneDirty = false;
     const angles = orbits.map((o) => o.angle);
+    const zoom = magnify * (1 - smooth(clamp(Math.abs(active-progress)*2)));
+    stage.style.setProperty('--detail-scale', (1+zoom*.43).toFixed(3));
     if (viewer && hasContext) {
       try {
         const tilt = orbits[active].tilt * (1 - Math.abs(active - progress) * 1.7);
-        viewer.draw(progress, angles, tilt, active, reducedMotion.matches);
+        viewer.draw(progress, angles, tilt, active, reducedMotion.matches, zoom);
         if (!webglInUse) {
           webglInUse = true;
           stage.dataset.ready = 'true';
@@ -258,7 +269,7 @@ function prewarm() {
 async function loadScene() {
   try {
     const { createViewer } = await import('./viewer.js');
-    viewer = createViewer(canvas);
+    viewer = await createViewer(canvas);
     hasContext = true;
     resizeScene();
   } catch (error) {
@@ -337,11 +348,20 @@ function endDrag(event) {
 }
 for (const name of ['pointerup', 'pointercancel', 'lostpointercapture']) stage.addEventListener(name, endDrag);
 
+function setDetail(on) {
+  magnifyGoal = on ? 1 : 0;
+  detail.setAttribute('aria-pressed', String(on));
+  detail.title = on ? 'Общий план' : 'Крупный план';
+  queue();
+}
+detail.addEventListener('click', () => setDetail(!magnifyGoal));
+
 function resetAngle() {
   const o = orbits[active];
   o.speed = 0;
   o.goal = Math.round(o.angle / TAU) * TAU;
   o.tiltGoal = 0;
+  if (magnifyGoal) setDetail(false);
   queue();
 }
 $('reset').addEventListener('click', resetAngle);

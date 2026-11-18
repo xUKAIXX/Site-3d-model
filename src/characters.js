@@ -1,364 +1,308 @@
-import * as T from 'three';
-import { ball, batch, box, chain, column, curve, finish, halfEye, joint, limb, path, polygon, ring, rod, shape, shell, sneaker } from './sculpt.js';
+import { Group } from 'three';
+import { ball, batch, box, chain, column, curve, finish, joint, lathe, limb, mesh, path, polygon, ring, rod, shape } from './sculpt.js';
+import { cubanCharm, engravedCanvas, eye, fabric, leather, ribKnit, rosette, seams, silver, squareCloth, trainer, warmGold } from './wardrobe.js';
 
 const TAU = Math.PI * 2;
-const gold = () => finish('#db9a3f', { roughness: .25, metalness: .82, grain: .045 });
-const platinum = () => finish('#b3c4c4', { roughness: .28, metalness: .84, grain: .055 });
+const skinMaterial = (hex, roughness = .54) => finish(hex, { roughness, grain: .22, surface: 'clay', vertexColors: true });
 
-function charm(g, material, center, points, inset) {
-  shape(g, material, (s) => polygon(s, points), center, { depth: .043, bevel: .023 });
-  if (inset) {
-    shape(g, inset, (s) => polygon(s, points.map(([x, y]) => [x * .7, y * .70])), [center[0], center[1], center[2] + .06], { depth: .009, bevel: .01 });
-  }
+function eyeMats({ lid, line, iris, fleck, limbal, white = '#f6ead2' }) {
+  return {
+    lid: finish(lid,{ roughness: .52, surface:'clay', grain:.14 }),
+    liner: finish(line,{ roughness:.57, surface:'clay' }),
+    white: finish(white,{ roughness:.34, coat:.13, surface:'glazed',grain:.04 }),
+    irisSurface: finish('#fff',{ roughness:.31,coat:.23,vertexColors:true,grain:0 }),
+    pupil: finish('#141b1a',{ roughness:.16, coat:.43, grain:0 }),
+    glint: finish('#fdf6e6',{ roughness:.15, grain:0 }),
+    iris, irisFleck: fleck, limbal,
+  };
 }
 
-function fist(g, material, at, tilt, side = 1) {
-  const hand = joint(g, at, [0, side * -.06, tilt]);
-  ball(hand, material, [0, 0, 0], [.202, .116, .121]);
-  for (let i = 0; i < 3; i++) {
-    const y = .051 - .044 * i;
-    limb(hand, material, [[side * .061,y,.060,.047],[side * .17,y - .008,.074,.049],[side * .219,y - .038,.067,.039],[side * .224,y - .060,.057,.006]], 16, 10);
-  }
-  limb(hand, material, [[-.035 * side,.038,.071,.054],[-.08 * side,.085,.096,.059],[-.151 * side,.063,.09,.015]], 16, 10);
-  return hand;
+function quartz(parent, metal, inset, at) {
+  const pendant = cubanCharm(parent, metal, inset, at,
+    [[0,.147],[.132,.069],[.106,-.101],[0,-.153],[-.108,-.098],[-.133,.066]]);
+  pendant.rotation.z=-.129;
+  rosette(pendant,metal,[0,-.004,.072],.061,.38,.012);
+  return pendant;
 }
 
-export function spongebob() {
-  const g = new T.Group();
-  const skin = finish('#e3ae37', { roughness: .55, grain: .19 });
-  const core = finish('#e6ae37', { roughness: .58, grain: .23, vertexColors: true });
-  const lids = finish('#e4ad37', { roughness: .55, grain: .15 });
-  const lidLine = finish('#b97e21', { roughness: .58 });
-  const brow = finish('#60431e', { roughness: .71 });
-  const cheek = finish('#edb349', { roughness: .63 });
-  const freckle = finish('#b86930', { roughness: .7 });
-  const white = finish('#fff0d6', { roughness: .37 });
-  const iris = finish('#458694', { roughness: .34 });
-  const pupil = finish('#1a2620', { roughness: .29 });
-  const mouth = finish('#482519', { roughness: .84 });
-  const lip = finish('#c4862f', { roughness: .58 });
-  const tongue = finish('#ad5746', { roughness: .61 });
-  const shirt = finish('#e8dec6', { roughness: .68, grain: .15 });
-  const cotton = finish('#faf1d9', { roughness: .73, grain: .14 });
-  const tie = finish('#9c4031', { roughness: .58 });
-  const pants = finish('#533929', { roughness: .76, grain: .28 });
-  const topstitch = finish('#795537', { roughness: .72, grain: .19 });
-  const rubber = finish('#2a2722', { roughness: .74, grain: .17 });
-  const leather = finish('#393e34', { roughness: .51, grain: .16 });
-  const toe = finish('#443b2b', { roughness: .55 });
-  const chainMat = gold();
+export function spongebob(carving) {
+  const g = new Group();
+  const skin = skinMaterial('#dba849',.61);
+  const enamel = finish('#344238',{ roughness:.39, coat:.24, surface:'glazed' });
+  const gilt = warmGold();
+  const oldGold = finish('#8b6234',{ roughness:.35, metalness:.75,surface:'metal' });
+  const tobacco = fabric('#4d3428');
+  const welt = fabric('#79533a');
+  const seam = fabric('#c49460');
+  const tee = fabric('#d9ceba');
+  const cotton = finish('#ebe2c9',{ roughness:.79, surface:'ribbed', grain:.22 });
+  const creamy = fabric('#ede4cc');
+  const shade = fabric('#aa9e85');
+  const brick = fabric('#903d30');
+  const rose = finish('#9e5644',{ roughness:.55, surface:'glazed' });
+  const tooth = finish('#faf0d8',{ roughness:.37, coat:.12, grain:.07 });
+  const lash = finish('#654424',{ roughness:.69,grain:.14 });
+  const eyes = eyeMats({ lid:'#dba745', line:'#ad772f', iris:'#396f82', fleck:'#87b6ad', limbal:'#233944' });
+  const boot = leather('#2e332c');
+  const bootTrim = leather('#62513a');
+  const cap = leather('#424034');
+  const outsole = leather('#211f1a');
+  const midsole = finish('#d0c1a6',{ roughness:.79, surface:'leather',grain:.29 });
 
-  const shoeMats = { upper: leather, toe, sole: shirt, outsole: rubber, badge: topstitch, lace: cotton };
-  for (const side of [-1, 1]) {
-    const x = .47 * side;
-    sneaker(g, shoeMats, [x + .03*side, 0, side < 0 ? .13 : -.02], side * .23, 1.025);
-    rod(g, skin, [x + .027*side, .36, .056], [x - .012*side, .97, -.014], .097, .087);
-    rod(g, cotton, [x + .022*side, .318, .039], [x + .004*side, .70, .016], .124, .11);
-    for (const [y, mat] of [[.531, topstitch], [.579, tie], [.665, shirt]]) {
-      ring(g, mat, [x + .012*side, y, .027], .114, .013, true);
+  mesh(g,carving,skin);
+  for (const side of [-1,1]) {
+    const x=side*.482;
+    const shoeZ=side<0?.127:-.094;
+    trainer(g,{upper:boot,toe:cap,sole:midsole,outsole,trim:bootTrim,tongue:boot,stitch:seam,lace:creamy,hardware:oldGold},[x,0,shoeZ],side*.229,1.035);
+    rod(g,finish('#c8953d',{roughness:.55,surface:'clay'}),[x,.359,shoeZ+.011],[x*.973,.944,shoeZ-.062],.080,.074);
+    const sock = ribKnit(g,cotton,[x,.347,shoeZ],[[0,.118],[.054,.121],[.212,.117],[.399,.102],[.441,.104]],{ ribs:26, tilt:side*.039-.095 });
+    for (const [h, mat, wire] of [[.232,brick,.0095],[.283,welt,.0085],[.399,creamy,.009]]) ring(sock,mat,[0,h,0],h>.35?.105:.117,wire,true);
+    const cuff = joint(g,[x,.785,shoeZ*.47],[0,side*.062,side*.092]);
+    squareCloth(cuff,tobacco,[[0,.111,.113],[.034,.229,.256],[.093,.270,.275],[.179,.287,.289],[.239,.268,.266]],.68,.01);
+    squareCloth(cuff,welt,[[.026,.219,.25],[.04,.239,.265],[.062,.251,.272],[.087,.253,.274]],.68,.002);
+  }
+
+  // The chinos have separately sculpted hems, tapered sides, pocket welts and topstitching.
+  squareCloth(g,tobacco,[[.842,.040,.03],[.866,.765,.379],[.906,.965,.46],[1.026,1.025,.514],[1.186,1.043,.506],[1.307,1.038,.49],[1.376,1.029,.493],[1.396,1.015,.457],[1.409,.032,.038]], .52,.018);
+  squareCloth(g,welt,[[1.277,1.036,.50],[1.296,1.053,.513],[1.370,1.054,.515],[1.399,1.020,.486]],.52,.004);
+  squareCloth(g,tee,[[1.397,.968,.45],[1.410,1.035,.502],[1.443,1.058,.512],[1.534,1.049,.515],[1.628,1.036,.493],[1.664,.904,.416]],.55,.012);
+  for (const side of [-1,1]) {
+    const pocket=joint(g,[side*.635,1.097,.448],[.03,side*.13,side*.09]);
+    shape(pocket,welt,(s)=>polygon(s,[[-.182,.064],[.164,.064],[.167,-.004],[.110,-.058],[-.108,-.052],[-.174,-.007]]),[0,0,.028],{depth:.023,bevel:.019});
+    box(pocket,tobacco,[0,.017,.072],[.304,.025,.014],.007,2);
+    seams(pocket,seam,[[-.147,.061,.073],[0,.072,.078],[.149,.058,.073]],13,.0047);
+    for(const dx of [-.131,.135]) ball(pocket,oldGold,[dx,.011,.082],[.016,.016,.010]);
+    const carp=joint(g,[side*1.018,1.123,-.035],[0,side*Math.PI/2,0]);
+    box(carp,tobacco,[0,-.058,0],[.365,.21,.068],.036);
+    box(carp,welt,[.006,.041,.023],[.388,.087,.052],.020);
+    ball(carp,oldGold,[0,.028,.058],[.018,.018,.010]);
+    const legLine=[[side*.287,.931,.439],[side*.452,.933,.465],[side*.663,.948,.438],[side*.832,.952,.391]];
+    seams(g,seam,legLine,21,.0043);
+
+    shape(g,creamy,(s)=>polygon(s,[[side*.028,.115],[side*.505,.089],[side*.333,-.154],[side*.214,-.098]]),[0,1.478,.487],{depth:.032,bevel:.021});
+    path(g,shade,[[side*.076,1.55,.53],[side*.27,1.548,.533],[side*.455,1.566,.522]],.0085,27,7);
+    const sh=side===1 ? .007 : -.013;
+    limb(g,tee,[[side*.940,1.689,.013,.110],[side*1.038,1.674,.094,.170],[side*1.135,1.579,.157,.178],[side*1.191,1.482+sh,.226,.142],[side*1.204,1.469+sh,.243,.117]],30,22);
+    limb(g,creamy,[[side*1.153,1.536,.198,.129],[side*1.188,1.489+sh,.234,.153],[side*1.199,1.469+sh,.246,.136]],20,24);
+  }
+  shape(g,brick,(s)=>polygon(s,[[-.101,.183],[.092,.180],[.071,.077],[.112,-.108],[.006,-.203],[-.111,-.125],[-.074,.080]]),[0,1.383,.531],{depth:.039,bevel:.023});
+  const tiePin=box(g,gilt,[.022,1.321,.597],[.103,.021,.019],.006,2);
+  tiePin.rotation.z=.17;
+  path(g,welt,[[-.087,1.446,.583],[.013,1.425,.575],[.074,1.441,.579]],.013,17);
+
+  for (const side of [-1,1]) {
+    const y=side===1?3.065:3.092;
+    const e=eye(g,[side*.399 + .016,y,.532],[.464,.469,.538],[0,side*.067,-side*.049],eyes,{gaze:.135, lidEnd:1.722, lean:side*.036, irisScale:1.006});
+    for(let i=0;i<3;i++){
+      const xx=(i-1)*.436, yy=i===1?.888:.792;
+      limb(e,lash,[[xx,yy,.096,.073],[xx*1.12,yy+.141,.116,.063],[xx*1.20+.025,yy+.258,.114,.042],[xx*1.22+.039,yy+.303,.108,.007]],20,12);
     }
-    box(g, pants, [x, .846, -.015], [.49, .262, .57], .112);
-    box(g, topstitch, [x, .775, -.005], [.479, .093, .56], .044);
   }
-
-  box(g, pants, [0, 1.117, 0], [2.20, .609, .985], .127, 5);
-  box(g, topstitch, [0, 1.26, 0], [2.22, .098, 1.003], .046);
-  box(g, shirt, [0, 1.473, 0], [2.24, .343, 1.008], .105, 5);
-  for (const side of [-1, 1]) {
-    const detail = joint(g, [side * .68, 1.099, .489], [0, 0, side * .081]);
-    box(detail, topstitch, [0, 0, 0], [.34, .128, .053], .022);
-    box(detail, pants, [0, .005, .032], [.297, .049, .014], .007);
-    box(g, topstitch, [side * 1.095, 1.06, .048], [.081, .247, .385], .037);
-    shape(g, cotton, (s) => polygon(s, [[side * .041, .095], [side * .52, .104], [side * .27, -.128]]), [0, 1.458, .493], { depth: .024, bevel: .019 });
+  for (const side of [-1,1]) {
+    const crown = shape(g,tooth,(s)=>{
+      s.moveTo(-.080,.096);s.quadraticCurveTo(-.092,.015,-.083,-.058);s.quadraticCurveTo(-.075,-.083,-.041,-.088);
+      s.quadraticCurveTo(.032,-.091,.067,-.080);s.quadraticCurveTo(.089,-.068,.085,-.025);s.lineTo(.084,.092);s.closePath();
+    },[side*.109+.015,2.382+side*.009,.558],{depth:.059,bevel:.018});
+    crown.rotation.z=side*-.036;
   }
-  shape(g, tie, (s) => polygon(s, [[-.102,.094],[.09,.094],[.071,.003],[.114,-.15],[.005,-.231],[-.101,-.15],[-.068,.004]]), [0, 1.42, .528]);
-  box(g, topstitch, [0, 1.414, .576], [.143,.104,.043], .021).rotation.z = -.044;
+  ball(g,rose,[.07,2.309,.505],[.172,.038,.037],[0,0,.048]);
 
-  const pores = [];
-  const place = (face, marks) => marks.forEach(([u,y,r,depth]) => pores.push({ face, u, y, r, depth }));
-  place('front', [[-.982,.80,.176,.124],[-.93,.429,.092,.063],[.998,.815,.125,.09],[1.064,.376,.084,.05],[-1.089,-.30,.096,.061],[.968,-.432,.148,.105],[-.961,-.63,.143,.119],[-.732,-.91,.11,.068],[.826,-.886,.083,.072],[.493,1.055,.078,.043],[-.14,.965,.102,.067]]);
-  place('left', [[.04,.79,.224,.151],[-.27,.32,.143,.09],[.15,.06,.185,.143],[-.028,-.48,.151,.119],[.21,-.83,.106,.063],[-.29,-.774,.078,.05]]);
-  place('right', [[-.067,.73,.193,.116],[.16,.371,.139,.07],[-.18,-.065,.16,.105],[.18,-.38,.19,.109],[-.13,-.79,.124,.078]]);
-  place('back', [[-.82,.749,.177,.116],[.862,.35,.211,.145],[.496,.789,.091,.072],[-.252,.397,.13,.098],[-.862,-.251,.151,.087],[.16,-.223,.246,.165],[.86,-.741,.17,.123],[-.367,-.746,.144,.10]]);
-  shell(g, core, [0, 2.724, 0], [2.64, 2.42, 1.12], .218, pores);
-
-  for (const side of [-1, 1]) {
-    const x = side * .405;
-    const eyes = halfEye(g, [x, 3.076 + (side === 1 ? -.029 : 0), .541], [.452, .463, .479], side * -.078, {
-      white, iris, pupil, lid: lids, liner: lidLine,
-    }, { irisX: .18, irisY: -.13, irisSize: 1.07, blink: 1.65 });
-    for (let i = 0; i < 3; i++) {
-      const x0 = -.47 + i * .468;
-      const y = i === 1 ? .905 : .78;
-      limb(eyes, brow, [[x0,y,.027,.041],[x0 * 1.17,y + .18,.052,.039],[x0 * 1.28,y + .283,.061,.017],[x0 * 1.29,y + .304,.061,.004]], 17, 9);
-    }
-    ball(g, cheek, [side * .763, 2.646 + .034*side, .563], [.197, .141, .123], [0, side * -.21, side * .25]);
-    for (const [i, dx] of [-.069,.028,.086].entries()) {
-      ball(g, freckle, [side * (.775 + dx), 2.666 + .033*side + (i === 1 ? .051 : 0), .671 - .027 * (i === 2)], [.022, .022, .01]);
-    }
+  const necklace=[];
+  for(let i=0;i<88;i++){
+    const a=i*TAU/88,s=Math.sin(a),c=Math.cos(a);
+    necklace.push([1.173*Math.sign(s)*Math.abs(s)**.33,2.186-.255*Math.max(0,c)**1.55+.027*s,.616*Math.sign(c)*Math.abs(c)**.32]);
   }
-
-  shape(g, mouth, (s) => {
-    s.moveTo(-.788, .224);
-    s.bezierCurveTo(-.55, -.018, -.238, -.052, .016, -.023);
-    s.bezierCurveTo(.371, -.014, .647, .072, .791, .298);
-    s.bezierCurveTo(.693, -.005, .485, -.281, .053, -.309);
-    s.bezierCurveTo(-.348, -.329, -.669, -.137, -.788, .224);
-    s.closePath();
-  }, [0, 2.426, .554], { depth: .046, bevel: .015 });
-  path(g, lip, [[-.755,2.641,.617],[-.55,2.473,.627],[-.15,2.385,.632],[.179,2.416,.635],[.547,2.515,.632],[.755,2.698,.618]], .029, 44);
-  path(g, lip, [[-.765,2.626,.573],[-.568,2.337,.575],[-.243,2.152,.575],[.164,2.132,.574],[.510,2.283,.577],[.753,2.642,.578]], .021, 42);
-  ball(g, tongue, [.112, 2.20, .577], [.248, .070, .045], [0, 0, .028]);
-  for (const side of [-1, 1]) {
-    const tooth = box(g, white, [side * .125, 2.354 + .018 * side, .633], [.199, .209, .087], .04, 4);
-    tooth.rotation.z = side * -.04;
-  }
-  limb(g, skin, [[-.020,2.855,.632,.087],[.019,2.787,.782,.108],[.133,2.795,.93,.131],[.253,2.854,1.038,.138],[.302,2.913,1.062,.104],[.333,2.926,1.076,.012]], 44, 22);
-
-  for (const side of [-1, 1]) {
-    limb(g, shirt, [[side * .992,1.782,-.002,.105],[side * 1.073,1.652,.039,.179],[side * 1.159,1.511,.169,.177],[side * 1.183,1.463,.20,.138],[side * 1.201,1.449,.215,.010]], 24, 20);
-  }
-  limb(g, skin, [[1.129,1.55,.157,.105],[1.236,1.384,.293,.097],[1.26,1.208,.469,.112],[1.13,1.235,.625,.123],[.604,1.399,.729,.105],[.058,1.521,.719,.104],[-.464,1.634,.649,.086],[-.574,1.656,.625,.051]], 72);
-  limb(g, skin, [[-1.139,1.538,.163,.104],[-1.247,1.351,.319,.094],[-1.225,1.194,.524,.121],[-1.08,1.232,.753,.121],[-.546,1.376,.919,.112],[.052,1.558,.928,.109],[.525,1.681,.806,.093],[.653,1.698,.745,.062]], 72);
-  fist(g, skin, [-.627, 1.654, .674], .19, -1);
-  const hand = fist(g, skin, [.68, 1.691, .806], -.25, 1);
-  box(hand, chainMat, [.147, .033, .124], [.091, .076, .045], .018).rotation.z = -.25;
-  const bangle = ring(g, chainMat, [.37, 1.646, .865], .103, .022);
-  bangle.rotation.set(-.13, 1.04, -.02);
-
-  const necklace = [];
-  for (let i = 0; i < 92; i++) {
-    const angle = i * TAU / 92, sn = Math.sin(angle), cs = Math.cos(angle);
-    necklace.push([1.278 * Math.sign(sn) * Math.abs(sn) ** .32, 2.174 - .222 * Math.max(0,cs) ** 1.54 + .045 * sn, .649 * Math.sign(cs) * Math.abs(cs) ** .32]);
-  }
-  chain(g, chainMat, curve(necklace, true), 68, .084, .69);
-  ring(g, chainMat, [.038, 1.917, .681], .065, .02);
-  charm(g, chainMat, [.043, 1.808, .735], [[0,.115],[.117,.028],[.074,-.101],[-.064,-.116],[-.121,.021]], leather);
+  chain(g,gilt,curve(necklace,true),63,.083,.67);
+  ring(g,gilt,[.031,1.904,.641],.058,.016);
+  quartz(g,gilt,enamel,[.037,1.775,.638]).scale.setScalar(.9);
+  const watch=joint(g,[.412,1.785,.796],[-.351,1.034,-.171]);
+  ring(watch,oldGold,[0,0,0],.096,.025);
+  ring(watch,gilt,[0,0,.027],.098,.014);
+  const face=joint(g,[.425,1.871,.868],[.18,-.22,.164]);
+  box(face,oldGold,[0,0,0],[.179,.137,.054],.03,4);
+  box(face,gilt,[0,0,.024],[.162,.121,.041],.025,4);
+  box(face,enamel,[0,0,.047],[.124,.093,.013],.016,4);
+  for(const x of [-.043,0,.043]) box(face,gilt,[x,0,.056],[.009,.032,.006],.002);
   return batch(g);
 }
 
-function floralPrint() {
-  const c = document.createElement('canvas');
-  c.width = 1024;
-  c.height = 384;
-  const ctx = c.getContext('2d');
-  ctx.fillStyle = '#a3ad58';
-  ctx.fillRect(0, 0, c.width, c.height);
-  let seed = 14;
-  function random() { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 2 ** 32; }
-  for (let i = 0; i < 4400; i++) {
-    ctx.fillStyle = i % 2 ? '#666e2c20' : '#f3f29625';
-    ctx.fillRect(random() * c.width, random() * c.height, 1 + random() * 2, 1 + random() * 2);
-  }
-  for (const [x, y, r, turn] of [[67,175,62,.31],[229,350,76,.8],[348,76,71,.2],[483,235,75,3.4],[654,91,62,.2],[777,305,80,1.9],[923,105,78,.9],[1010,314,62,2.6]]) {
-    for (const wrap of [-1024, 0, 1024]) {
-      ctx.save();
-      ctx.translate(x + wrap, y);
-      ctx.rotate(turn);
-      ctx.scale(r, r);
-      ctx.beginPath();
-      for (let i = 0; i <= 140; i++) {
-        const a = i * TAU / 140;
-        const radius = .73 + .25 * Math.cos(5 * a) + .055 * Math.sin(3 * a + 1);
-        i ? ctx.lineTo(radius * Math.cos(a), radius * Math.sin(a)) : ctx.moveTo(radius * Math.cos(a), radius * Math.sin(a));
-      }
-      ctx.closePath();
-      ctx.fillStyle = '#785d96'; ctx.fill();
-      ctx.strokeStyle = '#9e80bb'; ctx.lineWidth = .031; ctx.stroke();
-      ctx.fillStyle = '#aeb366';
-      ctx.beginPath(); ctx.ellipse(.07, -.065, .143, .122, 1, 0, TAU); ctx.fill();
-      ctx.restore();
-    }
-  }
-  const tex = new T.CanvasTexture(c);
-  tex.colorSpace = T.SRGBColorSpace;
-  tex.anisotropy = 4;
-  return tex;
-}
+export function patrick(carving) {
+  const g = new Group();
+  const clay = skinMaterial('#d48479',.54);
+  const eyes = eyeMats({lid:'#cb7e73',line:'#9b534d',iris:'#606455',fleck:'#c8ba8a',limbal:'#47342d',white:'#f3e7cc'});
+  const brow=finish('#a65e53',{roughness:.59,surface:'clay',grain:.19});
+  const lip=finish('#a75358',{roughness:.63,surface:'clay'});
+  const gold=warmGold();
+  const purple=finish('#68577a',{roughness:.4,coat:.15,surface:'glazed'});
+  const strap=leather('#393140',.49);
+  const edge=finish('#312932',{roughness:.31,coat:.28,surface:'glazed'});
+  const lens=finish('#231d2a',{roughness:.158,metalness:.34,coat:.64,grain:0});
+  const inlay=finish('#594362',{roughness:.32,metalness:.51,grain:.045});
+  const suede=leather('#584758',.71);
+  const toe=leather('#463c46',.63);
+  const outsole=leather('#2b282f',.77);
+  const sole=leather('#cbbca6',.75);
+  const lime=fabric('#747c47');
+  const border=fabric('#a5a469');
+  const welt=fabric('#434d31');
+  const twine=fabric('#e8ddbc');
+  const floral=finish('#fff',{roughness:.81,grain:.3,surface:'canvas',map:engravedCanvas()});
+  mesh(g,carving,clay);
 
-export function patrick() {
-  const g = new T.Group();
-  const flesh = finish('#e99080', { roughness: .56, grain: .21 });
-  const belly = finish('#eb9382', { roughness: .59, grain: .21, vertexColors: true });
-  const light = finish('#f2a38a', { roughness: .57 });
-  const speckle = finish('#bc6c64', { roughness: .7 });
-  const dark = finish('#593334', { roughness: .68 });
-  const sole = finish('#ebdbbf', { roughness: .65 });
-  const topstitch = finish('#c8c783', { roughness: .75, grain: .19 });
-  const moss = finish('#818c49', { roughness: .77, grain: .2 });
-  const pants = finish('#ffffff', { roughness: .79, grain: .18, map: floralPrint() });
-  const rubber = finish('#473c46', { roughness: .64 });
-  const grape = finish('#61495a', { roughness: .52, grain: .14 });
-  const laces = finish('#f4e9d9', { roughness: .66 });
-  const lens = finish('#2b2436', { roughness: .19, metalness: .42, grain: 0 });
-  const edge = finish('#392936', { roughness: .37, metalness: .34 });
-  const metal = gold();
+  for (const side of [-1,1]){
+    trainer(g,{upper:suede,toe,sole,outsole,trim:strap,tongue:toe,stitch:border,lace:twine,hardware:gold},[side===-1?-.626:.553,0,side===-1?.045:.123],side*.243,1.093,true);
+    const x=side===-1?-.549:.572;
+    const cuff=joint(g,[x,.553,.027],[0,side*.049,side*.12]);
+    column(cuff,floral,[[.002,.238,.297],[.028,.328,.357],[.113,.367,.390],[.247,.414,.452],[.289,.426,.460]],{rings:29,detail:74,modify(p,a,t){
+      const crease=.008*Math.sin(a*17+t*4);p.x+=crease*Math.sin(a);p.z+=crease*Math.cos(a);
+    }});
+    ribKnit(cuff,lime,[0,.012,0],[[0,.292,.330],[.024,.337,.368],[.059,.345,.372],[.074,.337,.364]],{ribs:28});
+    path(cuff,border,[[-.29,.044,.19],[-.20,.042,.30],[0,.041,.377],[.226,.047,.278],[.320,.041,.137]],.0105,34,9);
+  }
+  column(g,floral,[[.620,.039,.048],[.660,.625,.448],[.704,.931,.563],[.821,1.064,.688],[.989,1.116,.72],[1.177,1.116,.722],[1.279,1.107,.718],[1.329,1.079,.699]],{detail:146,rings:52,modify(p,a,t){
+    const run = Math.sin(12*a + t * 3.9) * Math.sin(Math.PI*t)**.78;
+    const fold=.018*run + .011*Math.sin(a*21 + t*13)*Math.sin(Math.PI*t)**2;
+    p.x+=Math.sin(a)*fold;p.z+=Math.cos(a)*fold;
+    p.y+=(.036*Math.sin(a*2+.53)+.012*Math.cos(a*5))*(1-t)**2;
+  }});
+  ribKnit(g,lime,[0,1.199,-.022],[[0,1.095,.731],[.032,1.132,.755],[.112,1.124,.755],[.146,1.081,.728]],{ribs:78});
+  path(g,border,[[-1.02,1.256,.294],[-.685,1.26,.576],[0,1.269,.739],[.653,1.27,.590],[1.024,1.267,.294]],.011,44,10);
+  seams(g,twine,[[-.852,1.211,.461],[-.535,1.214,.626],[0,1.226,.742],[.53,1.221,.633],[.852,1.217,.470]],51,.0056);
+  for(const side of [-1,1]) {
+    const p = joint(g,[side*1.047,.986,.266],[.08,side*.942,side*.062]);
+    shape(p,lime,(s)=>polygon(s,[[-.135,.111],[.155,.088],[.146,-.126],[.066,-.168],[-.143,-.139]]),[0,0,0],{depth:.031,bevel:.022});
+    box(p,welt,[.005,.106,.031],[.314,.089,.061],.028);
+    ball(p,gold,[side*.036,.089,.069],[.023,.023,.013]);
+    seams(p,border,[[-.115,-.070,.050],[-.102,-.128,.054],[.060,-.145,.05],[.115,-.119,.048]],12,.0055);
+    limb(g,twine,[[0,1.234,.742,.024],[side*.065,1.18,.773,.029],[side*.11,1.084+side*.012,.766,.026],[side*.127,1.017+side*.033,.753,.023],[side*.127,1.008+side*.033,.751,.012]],27,12);
+    ball(g,gold,[side*.024,1.224,.757],[.030,.026,.011]);
+  }
+  ball(g,twine,[0,1.225,.774],[.048,.036,.032]);
 
-  for (const side of [-1, 1]) {
-    const x = .55 * side;
-    sneaker(g, { upper: grape, toe: grape, sole, outsole: rubber, badge: moss, lace: laces }, [x, 0, side * .075], side * .26, 1.14);
-    limb(g, flesh, [[x*1.05,.31,.038,.124],[x,.474,.027,.186],[x*.995,.659,.003,.237],[x,.798,-.005,.235]], 29);
-    const cuff = joint(g, [x * .96, .55, .005], [0, 0, side * .14]);
-    column(cuff, pants, [[-.033,.266,.33],[.02,.334,.395],[.204,.375,.454],[.291,.41,.485]], { rings: 22, detail: 64 });
-    const seam = ring(cuff, moss, [0, .005, 0], .338, .018, true);
-    seam.scale.y = 1.15;
+  for(const side of [-1,1]){
+    eye(g,[side*.198-.052,2.787+side*.024,.350],[.203,.244,.334],[0,side*.135,side*.104],eyes,{gaze:.15,lidEnd:1.61,lean:side*.037,irisScale:.95});
+    limb(g,brow,[[side*.064-.092,2.991+side*.050,.337,.008],[side*.191-.074,3.026+side*.035,.300,.037],[side*.277-.070,3.010+side*.066,.255,.034],[side*.318-.071,2.976+side*.050,.211,.008]],26,14);
   }
-  column(g, pants, [[.612,.109,.111],[.641,.713,.433],[.691,.977,.593],[.793,1.064,.674],[1.092,1.104,.698],[1.237,1.086,.691],[1.284,1.011,.663]], {
-    detail: 120, rings: 45, modify: (p, a, t) => { const a1 = Math.sin(a*18+t*4) * .014; p.x += a1 * Math.sin(a); p.z += a1 * Math.cos(a); },
-  });
-  column(g, moss, [[1.166,1.071,.694],[1.209,1.111,.721],[1.283,1.128,.732],[1.315,1.121,.730],[1.323,1.080,.707]], { rings: 16 });
-  path(g, topstitch, [[-.955,1.242,.375],[-.621,1.242,.603],[0,1.241,.735],[.677,1.239,.59],[.965,1.234,.365]], .012, 35, 8);
-  for (const side of [-1, 1]) {
-    limb(g, laces, [[0,1.216,.746,.027],[side*.074,1.156,.749,.036],[side*.151,.996 + side * .022,.713,.033],[side*.152,.978 + side*.022,.713,.011]], 24, 11);
+  ball(g,lip,[.057,2.279,.445],[.139,.032,.035],[0,0,.13]);
+  const glasses=joint(g,[-.008,2.597,.436],[.069,-.052,-.079]);
+  const silhouette=(s,u=1)=>{
+    s.moveTo(-.210*u,.089*u);s.quadraticCurveTo(-.218*u,.130*u,-.167*u,.136*u);s.lineTo(.165*u,.131*u);
+    s.quadraticCurveTo(.221*u,.129*u,.205*u,.070*u);s.lineTo(.164*u,-.097*u);
+    s.quadraticCurveTo(.148*u,-.130*u,.080*u,-.131*u);s.lineTo(-.103*u,-.123*u);s.quadraticCurveTo(-.171*u,-.120*u,-.182*u,-.068*u);s.closePath();
+  };
+  for(const side of [-1,1]){
+    const frame=joint(glasses,[side*.232,0,.003],[0,side*.185,side*.031]);
+    shape(frame,edge,silhouette,[0,0,0],{depth:.052,bevel:.039});
+    shape(frame,gold,(s)=>silhouette(s,.959),[0,0,.050],{depth:.018,bevel:.012});
+    shape(frame,inlay,(s)=>silhouette(s,.873),[0,0,.069],{depth:.011,bevel:.013});
+    shape(frame,lens,(s)=>silhouette(s,.792),[0,0,.076],{depth:.021,bevel:.019});
+    box(frame,edge,[side*.207,.058,.022],[.101,.076,.077],.022);
+    for(const h of [-.011,.029])ball(frame,gold,[side*.23,.057+h,.063],[.014,.014,.008]);
+    path(glasses,edge,[[side*.454,.079,.014],[side*.498,.084,-.105],[side*.422,.046,-.333]],.029,23,12);
   }
+  path(glasses,gold,[[-.058,.040,.042],[0,.073,.062],[.058,.042,.047]],.022,24,12);
+  const bracelet = joint(g,[.674,2.437,.482],[-.23,1.24,-.74]);
+  ring(bracelet,gold,[0,0,0],.095,.022);
+  ring(bracelet,purple,[0,0,.030],.095,.013);
 
-  column(g, belly, [[.75,.10,.06],[.95,.85,.53],[1.206,1.039,.675],[1.49,1.116,.741],[1.72,1.06,.705],[1.98,.918,.622],[2.25,.698,.533],[2.49,.558,.464,.026],[2.75,.455,.397,.048],[3.025,.349,.33,.028],[3.271,.235,.239,-.016,-.012],[3.482,.166,.172,-.082,-.025],[3.628,.095,.107,-.157,-.035],[3.713,.027,.044,-.228,-.022],[3.709,.002,.004,-.26,-.018]], {
-    rings: 103, detail: 116, modify: (p, a, t, color) => {
-      const navel = Math.max(0, 1 - (p.x/.101)**2 - ((p.y-1.405)/.085)**2) ** 1.7;
-      if (p.z > .36) p.z -= navel * .06;
-      const blush = .038 * Math.pow(Math.abs(Math.sin(a)), 2) + .015 * Math.sin(p.y * 11 + a * 7) * Math.sin(a * 11);
-      color.setRGB(1 - blush, 1 - blush * 1.9 - .22*navel, 1 - blush * 1.12 - .14*navel);
-    },
-  });
-  limb(g, flesh, [[-.373,2.227,-.087,.049],[-.545,2.124,-.063,.203],[-.811,1.964,-.031,.259],[-1.028,1.674,.07,.228],[-1.056,1.395,.244,.178],[-.893,1.237,.494,.131],[-.763,1.263,.54,.074],[-.731,1.28,.548,.004]], 52, 22);
-  limb(g, flesh, [[.363,2.223,-.095,.051],[.546,2.128,-.09,.203],[.856,1.991,-.075,.253],[1.128,1.772,-.023,.207],[1.22,1.552,.106,.166],[1.16,1.341,.331,.129],[1.064,1.256,.382,.071],[1.009,1.245,.399,.005]], 56, 22);
-  ring(g, metal, [1.137, 1.339, .344], .126, .022).rotation.set(1.09, -.23, -.38);
-  path(g, metal, [[-.939,1.319,.404],[-.94,1.245,.501],[-.851,1.181,.504],[-.771,1.2,.488]], .021, 24);
-
-  // Oversized glasses with bevelled frames, gold hinges and separate lenses.
-  const spectacles = joint(g, [.025, 2.656, .386], [0, -.034, -.09]);
-  for (const side of [-1, 1]) {
-    const frame = joint(spectacles, [side * .241, 0, 0], [.022, side * .18, side * .034]);
-    const glass = (s, m = 1) => {
-      s.moveTo(-.215*m,.084*m);
-      s.quadraticCurveTo(-.228*m,.139*m,-.165*m,.146*m);
-      s.lineTo(.157*m,.146*m); s.quadraticCurveTo(.234*m,.151*m,.219*m,.077*m);
-      s.lineTo(.183*m,-.087*m); s.quadraticCurveTo(.172*m,-.134*m,.093*m,-.134*m);
-      s.lineTo(-.105*m,-.134*m); s.quadraticCurveTo(-.189*m,-.133*m,-.2*m,-.059*m); s.closePath();
-    };
-    shape(frame, edge, glass, [0, 0, 0], { depth:.056,bevel:.036 });
-    shape(frame, metal, (s) => glass(s,.94), [0, 0, .053], { depth:.018,bevel:.013 });
-    shape(frame, lens, (s) => glass(s,.828), [0, 0, .074], { depth:.023,bevel:.02 });
-    box(frame, metal, [side*.216,.069,.018], [.071,.07,.103], .02);
-    path(spectacles, edge, [[side*.46,.092,.025],[side*.508,.092,-.124],[side*.452,.057,-.30]], .035, 22);
-  }
-  path(spectacles, metal, [[-.055,.043,.068],[0,.071,.085],[.054,.051,.068]], .03);
-  limb(g, speckle, [[-.318,2.857,.27,.011],[-.264,2.932,.33,.042],[-.179,2.96,.347,.045],[-.089,2.93,.37,.014]], 23);
-  limb(g, speckle, [[.152,2.904,.367,.011],[.239,2.955,.31,.046],[.324,2.96,.267,.04],[.381,2.916,.222,.005]], 23);
-  const smile = joint(g, [0,2.291,.525], [0, -.068, -.036]);
-  shape(smile, dark, (s) => {
-    s.moveTo(-.388,.107); s.bezierCurveTo(-.212,-.056,.103,-.063,.346,.113);
-    s.bezierCurveTo(.285,-.092,.091,-.161,-.123,-.142); s.quadraticCurveTo(-.328,-.113,-.388,.107); s.closePath();
-  }, [0,0,0], { depth: .022, bevel: .014 });
-  ball(smile, light, [.005,-.095,.021], [.114,.029,.021]);
-  for (const side of [-1, 1]) {
-    ball(g, light, [side*.373,2.382,.477], [.111,.078,.088]);
-    for (let i = 0; i < 3; i++) ball(g, speckle, [side * (.39 + i*.054), 2.381 + (i%2)*.041, .556-i*.023], [.019,.017,.009]);
-  }
-  for (const [x,y,z,r] of [[-.414,1.719,.683,.021],[-.477,1.67,.659,.015],[-.37,1.65,.702,.013],[.487,1.52,.677,.017],[.541,1.576,.652,.022],[.499,1.603,.669,.013]]) {
-    ball(g,speckle,[x,y,z],[r,r,.009]);
-  }
-  const necklace = [];
-  for (let i = 0; i < 64; i++) {
-    const a = i * TAU/64, s = Math.sin(a), c = Math.cos(a);
-    necklace.push([.79*s, 2.168 - .303*Math.max(0,c) ** 1.56 - .033*s, .58*c + .09*Math.max(0,c)]);
-  }
-  chain(g, metal, curve(necklace,true), 46, .079, .65);
-  ring(g, metal, [.045,1.825,.718], .06, .021);
-  const star = Array.from({ length: 10 }, (_, i) => {
-    const a = Math.PI / 2 + i * TAU / 10, r = i % 2 ? .087 : .176;
-    return [r * Math.cos(a), r * Math.sin(a)];
-  });
-  charm(g, metal, [.045,1.686,.742], star, grape);
+  chain(g,gold,curve([[-.714,2.227,-.103],[-.815,2.065,.165],[-.62,1.994,.427],[-.328,1.869,.640],[.005,1.826,.709],[.399,1.891,.636],[.707,2.010,.422],[.819,2.098,.064],[.54,2.198,-.462],[-.03,2.248,-.564],[-.573,2.207,-.405]],true),48,.085,.65);
+  ring(g,gold,[.029,1.795,.738],.067,.0195);
+  const star=Array.from({length:10},(_,i)=>{const a=Math.PI/2+i*TAU/10,r=i%2?.089:.191;return [r*Math.cos(a),r*Math.sin(a)];});
+  const charm=cubanCharm(g,gold,purple,[.044,1.622,.742],star);
+  charm.rotation.set(.104,.121,.133);
+  rosette(charm,gold,[0,-.005,.072],.05,.44,.006,5);
   return batch(g);
 }
 
-export function squidward() {
-  const g = new T.Group();
-  const skin = finish('#70a59e', { roughness: .54, grain: .17 });
-  const face = finish('#85b7aa', { roughness: .53, grain: .17, vertexColors: true });
-  const lids = finish('#77a99f', { roughness: .59 });
-  const line = finish('#457b76', { roughness: .60 });
-  const toe = finish('#457773', { roughness: .47 });
-  const freckles = finish('#60938b', { roughness: .7 });
-  const white = finish('#eddfbb', { roughness: .49 });
-  const iris = finish('#ac4935', { roughness: .43 });
-  const pupil = finish('#342522', { roughness: .33 });
-  const bomber = finish('#615045', { roughness: .73, grain: .24 });
-  const collar = finish('#3e3c39', { roughness: .76, grain: .20 });
-  const tape = finish('#968276', { roughness: .66, grain: .13 });
-  const dark = finish('#252d33', { roughness: .52, grain: .086 });
-  const padded = finish('#373e49', { roughness: .68, grain: .14 });
-  const silver = platinum();
-  const enamel = finish('#8e9ec2', { roughness: .27, metalness: .35 });
+export function squidward(carving) {
+  const g = new Group();
+  const porcelain = skinMaterial('#86ada0',.49);
+  const eyes = eyeMats({lid:'#769c92',line:'#427267',iris:'#94482e',fleck:'#d08e56',limbal:'#592e26',white:'#e6d9b8'});
+  const crease=finish('#697c72',{roughness:.66,surface:'clay'});
+  const canvas=fabric('#49423b');
+  const inset=fabric('#655345');
+  const knitted=finish('#303831',{roughness:.81,surface:'ribbed',grain:.32});
+  const edge=fabric('#8e7c69');
+  const thread=fabric('#b6a992');
+  const needle=finish('#9eb2b2',{roughness:.38,metalness:.6,surface:'metal'});
+  const bright=silver();
+  const enamel=finish('#638f97',{roughness:.32,metalness:.43,coat:.29,surface:'glazed'});
+  const cuff=leather('#29323b',.47);
+  const padded=leather('#40464b',.63);
+  const chrome=finish('#74858c',{roughness:.255,metalness:.89,surface:'metal'});
+  const earpad=leather('#202629',.75);
+  mesh(g,carving,porcelain);
 
-  for (const side of [-1,1]) {
-    limb(g, skin, [[side*.37,1.28,-.113,.135],[side*.44,.997,-.306,.12],[side*.52,.536,-.437,.116],[side*.652,.225,-.657,.163],[side*.861,.112,-.59,.172],[side*.977,.102,-.447,.099],[side*1.014,.101,-.388,.005]], 47, 19);
-    limb(g, skin, [[side*.31,1.292,.097,.144],[side*.467,.92,.213,.137],[side*.41,.535,.329,.104],[side*.463,.254,.416,.12],[side*.604,.141,.544,.175],[side*.817,.132,.64,.164],[side*.911,.141,.703,.086],[side*.953,.143,.73,.006]], 50, 19);
-    for (let i = 0; i < 3; i++) {
-      ball(g, toe, [side*(.648 + i*.079),.103,.641+i*.034], [.056,.052,.053]);
-    }
-  }
-  column(g, bomber, [[1.103,.027,.03],[1.135,.488,.286],[1.197,.647,.382],[1.323,.682,.382],[1.71,.705,.391],[1.926,.648,.346],[2.073,.564,.293],[2.166,.262,.248],[2.195,.02,.025]], {
-    detail: 92, rings: 64, modify: (p, a, t) => {
-      const wave = .019 * Math.sin(a*12+t*4) * Math.sin(Math.PI*t);
-      p.x += wave * Math.sin(a); p.z += wave * Math.cos(a);
+  // An oversized bomber with raised patch panels, knitted ribbing and zipper hardware.
+  column(g,canvas,[[1.145,.011,.013],[1.169,.450,.298],[1.249,.619,.365],[1.365,.683,.413],[1.557,.691,.421],[1.727,.685,.412],[1.873,.625,.351],[1.988,.572,.343],[2.083,.455,.302],[2.169,.261,.248],[2.19,.095,.104]],{
+    detail:112,rings:57,modify(p,a,t){
+      const fall=Math.sin(Math.PI*t)**1.35;
+      const bend=(.019*Math.sin(a*15+t*5)+.013*Math.sin(a*7-t*6))*fall;
+      p.x+=Math.sin(a)*bend;p.z+=Math.cos(a)*bend;
+      p.y+=.044*Math.cos(a-.79)*fall;
     },
   });
-  column(g, collar, [[1.129,.19,.16],[1.158,.601,.352],[1.209,.658,.382],[1.268,.685,.386]], { detail: 80, rings: 18 });
-  rod(g, skin, [0,1.999,0], [.005,2.644,.024], .221,.233);
-  for (const side of [-1, 1]) {
-    limb(g, bomber, [[side*.455,1.986,-.022,.123],[side*.599,1.891,-.017,.219],[side*.716,1.75,.063,.218],[side*.802,1.663,.066,.175],[side*.818,1.638,.065,.101]], 36, 22);
-    limb(g, collar, [[side*.746,1.735,.064,.153],[side*.793,1.665,.077,.176],[side*.824,1.622,.079,.147]], 18, 22);
-    shape(g, collar, (s) => polygon(s, [[side * .036,.037],[side * .228,.124],[side * .394,.026],[side * .24,-.132]]), [0,2.040,.286], { depth: .043, bevel: .028 });
-    path(g, tape, [[side*.142,2.071,.337],[side*.28,1.991,.355],[side*.382,2.043,.316]], .014, 18, 8);
-    path(g, tape, [[side*.451,1.365,.295],[side*.552,1.501,.269],[side*.600,1.671,.232]], .016, 23, 8);
-  }
-  box(g, collar, [0,1.827,.373], [.075,.425,.062], .021);
-  for (let i = 0; i < 11; i++) box(g, silver, [i%2 ? -.016 : .016, 1.67 + i*.026, .408], [.031,.015,.014], .005, 2);
-  box(g, silver, [0,1.971,.419], [.055,.105,.031], .015).rotation.z = -.236;
-  box(g, enamel, [.451,1.815,.304], [.134,.079,.022], .019).rotation.y = -.36;
-
-  limb(g, skin, [[-.778,1.708,.076,.087],[-.929,1.491,.173,.087],[-.941,1.285,.286,.094],[-.767,1.245,.404,.108],[-.403,1.332,.535,.091],[.02,1.458,.589,.087],[.289,1.498,.494,.052]], 57);
-  limb(g, skin, [[.777,1.697,.089,.092],[.934,1.445,.155,.089],[.878,1.257,.327,.103],[.706,1.273,.541,.104],[.393,1.353,.638,.103],[-.085,1.389,.666,.091],[-.346,1.456,.572,.055]], 55);
-  fist(g, skin, [.311,1.49,.517], -.29, 1);
-  const hand = fist(g, skin, [-.396,1.45,.592], .12, -1);
-  box(hand, silver, [-.12,.022,.121], [.086,.069,.042], .017);
-
-  column(g, face, [[2.06,.01,.04],[2.20,.212,.23],[2.426,.284,.292],[2.603,.385,.338],[2.778,.522,.432],[2.983,.637,.527],[3.222,.798,.630],[3.466,.943,.708],[3.676,.93,.712],[3.859,.754,.620],[4.008,.488,.44],[4.09,.226,.267],[4.118,.005,.008]], {
-    detail: 120, rings: 98, modify: (p, a, t, color) => {
-      p.x += .024*Math.sin(p.y*4.16+a)*Math.sin(a);
-      p.z += .014*Math.sin(p.y*14.2+a*7);
-      const n = Math.sin(t*38+a*3)*Math.sin(a*9)*.018;
-      color.setRGB(1 + n, 1 + n, 1 + n);
-    },
-  });
-  for (const [x,y,z,r] of [[-.66,3.59,.518,.039],[-.535,3.635,.587,.046],[-.464,3.506,.621,.025],[-.35,3.68,.653,.032],[-.267,3.56,.679,.024],[.494,3.59,.604,.036],[.626,3.516,.528,.032],[.389,3.686,.648,.031]]) {
-    ball(g, freckles, [x,y,z],[r,r*.86,.013], [0,x*.49,0]);
-  }
-  for (const side of [-1, 1]) {
-    halfEye(g, [side * .255, 3.121 + .008*side, .495], [.288,.379,.345], side * .087, { white, iris, pupil, lid: lids, liner: line }, { irisX: .10, irisY: -.14, blink: 1.57, irisSize: .95 });
-    limb(g, line, [[side*.089,3.381,.61,.016],[side*.216,3.436,.619,.044],[side*.389,3.47,.596,.067],[side*.538,3.437,.538,.04],[side*.56,3.419,.522,.007]], 34);
-  }
-  limb(g, skin, [[.005,3.089,.526,.102],[.019,2.933,.672,.131],[.036,2.766,.796,.154],[.064,2.604,.961,.177],[.079,2.444,.99,.198],[.066,2.355,.977,.147],[.052,2.293,.977,.025]], 61, 24);
-  limb(g, line, [[-.367,2.43,.297,.009],[-.222,2.499,.355,.021],[.0,2.527,.366,.023],[.231,2.48,.34,.024],[.344,2.404,.304,.005]], 34);
-
-  chain(g, silver, curve([[-.573,2.069,.169],[-.514,1.938,.307],[-.319,1.856,.421],[0,1.774,.47],[.319,1.854,.42],[.507,1.958,.294],[.563,2.062,.177]]), 24, .059, .65);
-  ring(g,silver,[.029,1.733,.481],.045,.016);
-  charm(g, silver, [.028,1.654,.486], [[0,.12],[.095,.012],[0,-.105],[-.095,.016]], enamel);
-
-  // Cup details and the padded headband sit on the sides of the sculpt, not on a flat decal.
-  path(g, dark, [[-.975,3.418,-.057],[-.974,3.710,-.077],[-.763,4.009,-.089],[-.411,4.163,-.091],[0,4.208,-.092],[.423,4.16,-.087],[.772,4.01,-.072],[.988,3.71,-.053],[.978,3.398,-.031]], .065, 80, 13);
-  path(g, padded, [[-.834,3.888,-.082],[-.643,4.067,-.08],[-.326,4.174,-.068],[0,4.193,-.066],[.328,4.167,-.065],[.674,4.068,-.065],[.871,3.881,-.055]], .075, 65, 13);
+  ribKnit(g,knitted,[0,1.157,0],[[0,.481,.298],[.027,.574,.343],[.108,.635,.387],[.167,.651,.380]],{ribs:62});
+  ribKnit(g,knitted,[0,2.048,.009],[[0,.333,.281],[.037,.275,.248],[.113,.238,.222],[.142,.229,.211]],{ribs:45});
   for (const side of [-1,1]) {
-    const pad = joint(g, [side*.907,3.385,-.026], [0,0,side*.128]);
-    ball(pad, padded, [0,0,0], [.165,.289,.237]);
-    ball(pad, dark, [side*.105,0,0], [.146,.272,.224]);
-    ball(pad, silver, [side*.196,0,0], [.072,.201,.171]);
-    ball(pad, dark, [side*.239,0,0], [.05,.177,.148]);
-    const logo = ring(pad, enamel, [side*.286,0,0], .081,.013);
-    logo.rotation.y = Math.PI / 2;
-    path(pad, silver, [[side*.065,.129,.175],[side*.109,.218,.094],[side*.107,.29,-.022]], .027, 20);
+    const a=side<0?.037:-.031;
+    limb(g,inset,[[side*.429,1.972+a,-.036,.144],[side*.551,1.909+a,-.020,.222],[side*.691,1.787+a,.034,.215],[side*.755,1.676+a,.076,.177],[side*.777,1.655+a,.078,.137]],38,24);
+    limb(g,knitted,[[side*.726,1.719+a,.071,.154],[side*.764,1.668+a,.079,.184],[side*.787,1.635+a,.088,.151]],22,24);
+    path(g,edge,[[side*.424,1.972+a,.195],[side*.581,1.885+a,.220],[side*.723,1.752+a,.191]],.0115,25,9);
+    seams(g,thread,[[side*.439,1.983+a,.203],[side*.584,1.893+a,.235],[side*.717,1.774+a,.197]],16,.0044);
+    const pocket = joint(g,[side*.403,1.53,.343],[0,side*.244,side*-.21]);
+    box(pocket,knitted,[0,0,0],[.066,.301,.054],.020);
+    path(pocket,edge,[[side*.037,-.128,.031],[side*.036,0,.033],[side*.036,.127,.031]],.011,22,8);
+    shape(g,knitted,(s)=>polygon(s,[[side*.035,.080],[side*.208,.128],[side*.376,.030],[side*.228,-.130]]),[0,2.034,.262],{depth:.037,bevel:.023});
+    seams(g,thread,[[side*.125,2.086,.317],[side*.212,1.975,.321],[side*.331,2.057,.289]],16,.0052);
+  }
+  const zipper=[[0,1.354,.403],[0,1.604,.444],[0,1.824,.405],[0,2.073,.292]];
+  path(g,knitted,zipper,.031,42,10);
+  const travel=curve(zipper);
+  for(let i=0;i<22;i++){
+    const p=travel.getPointAt(i/23);
+    box(g,needle,[i%2?.014:-.014,p.y,p.z+.029],[.036,.015,.014],.004,2).rotation.z=i%2?.18:-.18;
+  }
+  const slider=joint(g,[.021,1.831,.446],[.13,.20,-.24]);
+  box(slider,bright,[0,0,0],[.075,.118,.036],.022,3);
+  box(slider,knitted,[0,-.012,.021],[.028,.053,.012],.009,2);
+  const patch=joint(g,[.422,1.797,.329],[.04,.342,.18]);
+  box(patch,knitted,[0,0,0],[.195,.121,.041],.023);
+  rosette(patch,enamel,[-.035,0,.03],.042,.46,.008);
+  for (const y of [-.018,.015]) box(patch,thread,[.043,y,.029],[.051,.012,.005],.003);
+  const wrist=joint(g,[.413,1.389,.607],[.32,1.20,.125]);
+  ring(wrist,chrome,[0,0,0],.096,.019);
+  ring(wrist,bright,[0,0,.042],.093,.011);
+
+  for(const side of [-1,1]){
+    eye(g,[side*.249-.018,3.102+side*.021,.473],[.278,.382,.434],[0,side*.106,-side*.067],eyes,{gaze:.108,lidEnd:1.677,lean:-side*.056,irisScale:.91});
+    limb(g,crease,[[side*.078,3.387,.580,.010],[side*.218,3.454,.566,.035],[side*.373,3.476,.532,.042],[side*.516,3.436,.462,.010]],30,14);
+
+  }
+  chain(g,bright,curve([
+    [-.552,2.069,.160],[-.476,1.969,.305],[-.310,1.852,.422],[-.011,1.781,.453],[.269,1.831,.425],[.477,1.951,.314],[.575,2.062,.172],
+    [.561,2.092,-.035],[.383,2.098,-.220],[.123,2.091,-.320],[-.165,2.086,-.307],[-.412,2.083,-.193],[-.564,2.091,-.020],
+  ],true),44,.063,.66);
+  ring(g,bright,[.02,1.762,.475],.052,.014);
+  const badge=cubanCharm(g,bright,enamel,[.027,1.669,.492],[[0,.118],[.086,.027],[.038,-.100],[-.044,-.099],[-.085,.022]]);
+  badge.rotation.set(.13,.074,.14);
+  rosette(badge,bright,[0,.003,.071],.046,.42,.009);
+
+  // Machined earcups and a padded band, with each cup's geometry aligned to the head.
+  path(g,cuff,[[-.974,3.423,-.074],[-.995,3.739,-.079],[-.786,4.013,-.095],[-.416,4.167,-.111],[-.054,4.226,-.109],[.395,4.177,-.091],[.767,4.025,-.075],[.967,3.738,-.052],[.970,3.423,-.033]],.071,86,16);
+  path(g,chrome,[[-.979,3.548,-.128],[-.948,3.827,-.134],[-.726,4.043,-.165],[-.361,4.205,-.151],[-.044,4.256,-.154],[.408,4.204,-.132],[.772,4.049,-.121],[.950,3.827,-.095],[.978,3.551,-.072]],.018,72,9);
+  path(g,padded,[[-.818,3.957,-.071],[-.612,4.083,-.070],[-.320,4.179,-.063],[-.028,4.209,-.066],[.360,4.161,-.052],[.690,4.061,-.047],[.834,3.959,-.042]],.072,73,14);
+  for (const side of [-1,1]) {
+    const h=joint(g,[side*.878,3.397,-.053],[.163,side*.092,-side*Math.PI/2]);
+    h.scale.set(1.10,1,.870);
+    lathe(h,earpad,[[0,-.083],[.189,-.078],[.248,-.050],[.271,-.018],[.278,.017],[.265,.052],[.253,.069],[.225,.074],[0,.074]],80);
+    lathe(h,cuff,[[0,.045],[.239,.045],[.267,.071],[.280,.111],[.277,.164],[.261,.206],[.225,.229],[0,.233]],80);
+    lathe(h,chrome,[[0,.209],[.206,.209],[.232,.223],[.235,.238],[.212,.251],[0,.253]],80);
+    lathe(h,padded,[[0,.245],[.194,.245],[.207,.253],[.207,.273],[.185,.286],[0,.291]],80);
+    ring(h,enamel,[0,.289,0],.140,.010,true);
+    const plate=joint(h,[0,.295,0],[-Math.PI/2,0,0]);
+    rosette(plate,chrome,[0,0,.003],.094,.42,.010);
+    for(const a of [-Math.PI/4,Math.PI/4,Math.PI*1.25,Math.PI*.75]) ball(h,chrome,[.178*Math.sin(a),.285,.178*Math.cos(a)],[.010,.008,.010]);
   }
   return batch(g);
 }

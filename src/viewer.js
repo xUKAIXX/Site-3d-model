@@ -1,16 +1,18 @@
 import * as T from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { characterMakers } from './characters.js';
+import { loadClay } from './clay-assets.js';
 import { floorShadow, pedestalMakers } from './pedestals.js';
 
-export const initialYaws = [.34, -.29, .32];
+export const initialYaws = [.40, -.35, .35];
 const rimColors = ['#86f6d7', '#f8ac99', '#89bbff'].map((hex) => new T.Color(hex));
 const fillColors = ['#ffebc9', '#fff0dd', '#f3ebea'].map((hex) => new T.Color(hex));
 
-export function createViewer(canvas, { capture = false } = {}) {
+export async function createViewer(canvas, { capture = false } = {}) {
   const attributes = { alpha: true, antialias: true, powerPreference: 'high-performance' };
   const context = canvas.getContext('webgl2', attributes);
   if (!context) throw new Error('WebGL 2 context unavailable');
+  const surfaces = await loadClay();
   const debug = context.getExtension('WEBGL_debug_renderer_info');
   const rendererName = debug ? context.getParameter(debug.UNMASKED_RENDERER_WEBGL) : '';
   const software = !capture && /swiftshader|llvmpipe|software rasterizer/i.test(rendererName);
@@ -18,7 +20,7 @@ export function createViewer(canvas, { capture = false } = {}) {
   renderer.setClearColor(0x000000, 0);
   renderer.outputColorSpace = T.SRGBColorSpace;
   renderer.toneMapping = T.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.03;
+  renderer.toneMappingExposure = 1.0;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = T.PCFShadowMap;
 
@@ -28,11 +30,11 @@ export function createViewer(canvas, { capture = false } = {}) {
   const room = new RoomEnvironment();
   const reflection = pmrem.fromScene(room, .05, .1, 30, { size: 128 });
   scene.environment = reflection.texture;
-  scene.environmentIntensity = .36;
+  scene.environmentIntensity = .43;
   room.dispose();
   pmrem.dispose();
 
-  const ambient = new T.HemisphereLight('#e5f6ee', '#26382f', .86);
+  const ambient = new T.HemisphereLight('#e5f6ee', '#26382f', .78);
   scene.add(ambient);
   const key = new T.DirectionalLight('#ffebc9', 3.05);
   key.position.set(3.7, 7.25, 4.75);
@@ -64,7 +66,7 @@ export function createViewer(canvas, { capture = false } = {}) {
   function build(index) {
     if (figures[index]) return figures[index];
     const { root, height } = pedestalMakers[index]();
-    const sculpture = characterMakers[index]();
+    const sculpture = characterMakers[index](surfaces[index]);
     sculpture.position.y = height;
     const subject = new T.Group();
     subject.add(root, sculpture);
@@ -87,7 +89,7 @@ export function createViewer(canvas, { capture = false } = {}) {
     camera.updateProjectionMatrix();
   }
 
-  function draw(progress, angles, tilt, active, reduced = false) {
+  function draw(progress, angles, tilt, active, reduced = false, zoom = 0) {
     const source = Math.floor(progress), target = Math.min(source + 1, 2), tween = progress - source;
     rim.color.copy(rimColors[source]).lerp(rimColors[target], tween);
     key.color.copy(fillColors[source]).lerp(fillColors[target], tween);
@@ -104,7 +106,8 @@ export function createViewer(canvas, { capture = false } = {}) {
       item.node.scale.setScalar(1 - .23 * Math.abs(delta));
       item.subject.rotation.y = initialYaws[i] + angles[i] + .86 * delta;
     }
-    camera.position.set(-.33 * dive, 4.01 + tilt * 2.1 + .23 * dive, distance + 1.04 * dive);
+    camera.position.set(-.33 * dive, 4.01 + tilt * 2.1 + .23 * dive + zoom*.23, distance*(1-.294*zoom) + 1.04 * dive);
+    look.y = 2.37 + (active === 1 ? .88 : 1.08) * zoom;
     camera.lookAt(look);
     renderer.render(scene, camera);
   }

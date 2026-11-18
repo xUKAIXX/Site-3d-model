@@ -29,6 +29,10 @@
       <symbol id="i-reset" viewBox="0 0 24 24">
         <path d="M5.1 10.3a7 7 0 1 1 .8 5.1M5 5.8v4.8h4.8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
       </symbol>
+      <symbol id="i-detail" viewBox="0 0 24 24">
+        <circle cx="10.5" cy="10.5" r="5.9" fill="none" stroke="currentColor" stroke-width="1.45" />
+        <path d="m15 15 3.8 3.8m-10.4-8.3h4.3m-2.15-2.15v4.3" fill="none" stroke="currentColor" stroke-width="1.45" stroke-linecap="round" />
+      </symbol>
       <symbol id="i-flower" viewBox="0 0 180 170">
         <path d="M84 69C63 50 48 10 73 6c18-3 29 24 30 54 15-24 40-43 52-31 14 15-11 41-35 49 28-3 56 2 55 21-1 16-31 22-62 6 10 19 15 51-3 57-18 7-33-21-30-49-22 22-51 30-59 13-9-19 14-34 44-38C36 88 7 75 13 60c8-18 41-11 71 9Z" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round" />
       </symbol>
@@ -102,6 +106,7 @@
             </div>
             <div class="stage__controls">
               <div class="orbit-hint mono"><svg aria-hidden="true"><use href="#i-orbit" /></svg><span>ПОТЯНИ, ЧТОБЫ ВРАЩАТЬ</span></div>
+              <button class="reset detail" id="detail" type="button" title="Крупный план" aria-label="Крупный план" aria-pressed="false"><svg aria-hidden="true"><use href="#i-detail" /></svg></button>
               <button class="reset" id="reset" type="button" title="Исходный ракурс" aria-label="Вернуть исходный ракурс"><svg aria-hidden="true"><use href="#i-reset" /></svg></button>
             </div>
           </section>

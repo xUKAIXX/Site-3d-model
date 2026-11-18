@@ -131,7 +131,7 @@ button:focus-visible, a:focus-visible, [tabindex]:focus-visible { outline: 2px s
 .stage__view[data-ready='true'] canvas { opacity: 1; }
 .stage__view[data-ready='true'] .stage__posters { visibility: hidden; }
 .stage__posters { display: flex; align-items: center; justify-content: center; overflow: hidden; }
-.poster { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: var(--poster-opacity, 0); transform: translateY(var(--poster-y, 0)) scale(var(--poster-scale, 1)); }
+.poster { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: var(--poster-opacity, 0); transform: translateY(var(--poster-y, 0)) scale(calc(var(--poster-scale, 1) * var(--detail-scale, 1))); transform-origin: 50% 32%; }
 .poster.is-current { --poster-opacity: 1; }
 .stage__info { position: absolute; z-index: 1; right: 0; top: clamp(17px, 3.2vh, 32px); display: flex; align-items: center; gap: 8px; color: #d0e2d6; font-size: 10px; line-height: 1; letter-spacing: .09em; pointer-events: none; }
 .stage__bracket { width: 8px; height: 8px; border: 1px solid var(--accent); border-radius: 2px; box-shadow: 0 0 7px color-mix(in srgb, var(--accent), transparent 69%); }
@@ -144,6 +144,8 @@ button:focus-visible, a:focus-visible, [tabindex]:focus-visible { outline: 2px s
 .reset svg { width: 19px; height: 19px; }
 .reset:hover { border-color: var(--accent); background: #11261d; }
 .reset:active svg { transform: rotate(-38deg); }
+.detail[aria-pressed='true'] { background: var(--accent); border-color: var(--accent); color: #0b2019; }
+.detail:active svg { transform: scale(.9); }
 
 .deck { display: grid; grid-template-columns: auto minmax(0, 650px) 1fr; gap: clamp(20px, 4.2vw, 69px); align-items: center; border-top: 1px solid var(--line); position: relative; z-index: 2; }
 .deck__count { display: flex; gap: 7px; align-items: baseline; font-size: 11px; letter-spacing: .02em; color: #afc0b6; white-space: nowrap; }
