@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#081512" />
+    <meta name="description" content="Bottom Drop — подводная выставка трёх интерактивных виниловых фигурок." />
+    <link rel="icon" type="image/svg+xml" href="./mark.svg" />
+    <link rel="preload" as="image" href="./images/studio.webp" />
+    <title>Bottom Drop® — Underwater Vinyl Exhibition</title>
+  </head>
+  <body>
+    <svg class="icons" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <symbol id="i-mark" viewBox="0 0 40 40">
+        <path fill="currentColor" d="M20 0c3.4 11.7 8.3 16.6 20 20-11.7 3.4-16.6 8.3-20 20C16.6 28.3 11.7 23.4 0 20 11.7 16.6 16.6 11.7 20 0Zm0 15a5 5 0 1 0 0 10 5 5 0 0 0 0-10Z" />
+      </symbol>
+      <symbol id="i-sound" viewBox="0 0 24 24">
+        <path d="M3.5 10v4M7.75 6.5v11M12 3.5v17M16.25 7.5v9M20.5 10.5v3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+      </symbol>
+      <symbol id="i-down" viewBox="0 0 24 24">
+        <path d="M12 4.75v14.5m-5.5-5.5 5.5 5.5 5.5-5.5" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" />
+      </symbol>
+      <symbol id="i-diagonal" viewBox="0 0 24 24">
+        <path d="m6 6 12 12m-9 0h9V9" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" />
+      </symbol>
+      <symbol id="i-orbit" viewBox="0 0 24 24">
+        <path d="M16.5 9.1c3.1.4 5.3 1.5 5.3 2.9 0 1.8-4.4 3.25-9.8 3.25S2.2 13.8 2.2 12c0-1.4 2.2-2.5 5.3-2.9m8 3.1 1 2.85-3-1m-4-9a4.5 4.5 0 0 1 5.1 0m-5.1 13.9a4.5 4.5 0 0 0 5.1 0" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" />
+      </symbol>
+      <symbol id="i-reset" viewBox="0 0 24 24">
+        <path d="M5.1 10.3a7 7 0 1 1 .8 5.1M5 5.8v4.8h4.8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+      </symbol>
+      <symbol id="i-detail" viewBox="0 0 24 24">
+        <circle cx="10.5" cy="10.5" r="5.9" fill="none" stroke="currentColor" stroke-width="1.45" />
+        <path d="m15 15 3.8 3.8m-10.4-8.3h4.3m-2.15-2.15v4.3" fill="none" stroke="currentColor" stroke-width="1.45" stroke-linecap="round" />
+      </symbol>
+      <symbol id="i-flower" viewBox="0 0 180 170">
+        <path d="M84 69C63 50 48 10 73 6c18-3 29 24 30 54 15-24 40-43 52-31 14 15-11 41-35 49 28-3 56 2 55 21-1 16-31 22-62 6 10 19 15 51-3 57-18 7-33-21-30-49-22 22-51 30-59 13-9-19 14-34 44-38C36 88 7 75 13 60c8-18 41-11 71 9Z" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round" />
+      </symbol>
+    </svg>
+
+    <main class="gallery" id="gallery" aria-label="Коллекция Bottom Drop">
+      <div class="scroll-stop" id="spongebob" aria-hidden="true"></div>
+      <div class="scroll-stop" id="patrick" aria-hidden="true"></div>
+      <div class="scroll-stop" id="squidward" aria-hidden="true"></div>
+
+      <div class="pin" id="pin" data-chapter="0">
+        <div class="environment" aria-hidden="true">
+          <div class="environment__room room--kelp"></div>
+          <div class="environment__room room--coral"></div>
+          <div class="environment__room room--ink"></div>
+          <div class="environment__shade"></div>
+          <svg class="sea-flower sea-flower--high"><use href="#i-flower" /></svg>
+          <svg class="sea-flower sea-flower--low"><use href="#i-flower" /></svg>
+          <div class="silt" id="silt"></div>
+          <div class="dive-light" id="dive-light"></div>
+        </div>
+
+        <header class="top shell">
+          <a class="logo" href="#spongebob" data-jump="0" aria-label="Bottom Drop — к началу">
+            <svg class="logo__mark" aria-hidden="true"><use href="#i-mark" /></svg>
+            <span>BOTTOM<span class="logo__space"> </span>DROP<sup>®</sup></span>
+          </a>
+          <div class="top__label mono"><span>DEEP SEA</span><span class="top__divider"></span><span>VINYL EXHIBITION</span></div>
+          <button class="sound mono" id="sound" type="button" aria-pressed="false" aria-label="Звуковое сопровождение">
+            <svg aria-hidden="true"><use href="#i-sound" /></svg>
+            <span>ЗВУК <span class="sound__state" id="sound-state">ВЫКЛ</span></span>
+          </button>
+        </header>
+
+        <div class="exhibits shell">
+          <section class="copy" aria-label="Об экспонате">
+            <div class="edition mono"><span class="signal"></span> VINYL SERIES <span class="edition__slash">/</span> <span id="edition-number">001</span></div>
+            <div class="copy__stack" id="copy-stack" aria-live="polite" aria-atomic="true">
+              <article class="copy__panel is-current" data-copy="0">
+                <h1 class="title" aria-label="SpongeBob"><span>SPONGE</span><span>BOB<span class="title__dot">.</span></span></h1>
+                <div class="alias mono"><span class="alias__line"></span> THE FRY COOK</div>
+                <p>Фирменный прищур, золотая цепь и ни капли суеты. Подводный город после заката.</p>
+              </article>
+              <article class="copy__panel" data-copy="1" aria-hidden="true" inert>
+                <h2 class="title" aria-label="Patrick Star"><span>PATRICK</span><span>STAR<span class="title__dot">.</span></span></h2>
+                <div class="alias mono"><span class="alias__line"></span> THE STAR</div>
+                <p>Розовый винил, лиловые цветы и очки цвета ночи. Звезда, которой не нужны софиты.</p>
+              </article>
+              <article class="copy__panel" data-copy="2" aria-hidden="true" inert>
+                <h2 class="title" aria-label="Squidward"><span>SQUID</span><span>WARD<span class="title__dot">.</span></span></h2>
+                <div class="alias mono"><span class="alias__line"></span> THE HEADLINER</div>
+                <p>Холодная глазурь, серебро и наушники. Сквидвард здесь на своей волне.</p>
+              </article>
+            </div>
+            <a class="next" id="next" href="#patrick" data-jump="1">
+              <span id="next-label">Следующий экспонат</span>
+              <svg aria-hidden="true"><use href="#i-diagonal" /></svg>
+            </a>
+          </section>
+
+          <section class="stage" aria-label="Интерактивная фигурка">
+            <div class="stage__info mono" aria-hidden="true"><span class="stage__bracket"></span> <span id="stage-mode">3D&nbsp; VIEW</span> <span class="stage__counter" id="stage-counter">01</span></div>
+            <div class="stage__view" id="stage-view" tabindex="0" role="group" aria-label="Поворот фигурки SpongeBob" aria-describedby="orbit-help">
+              <span class="sr-only" id="orbit-help">Потяните фигурку влево или вправо. Также можно использовать клавиши со стрелками, клавиша Home возвращает исходный вид.</span>
+              <div class="stage__posters" aria-hidden="true">
+                <img class="poster is-current" data-poster="0" src="./images/spongebob.webp" alt="" width="720" height="880" draggable="false" fetchpriority="high" />
+                <img class="poster" data-poster="1" src="./images/patrick.webp" alt="" width="720" height="880" draggable="false" decoding="async" />
+                <img class="poster" data-poster="2" src="./images/squidward.webp" alt="" width="720" height="880" draggable="false" decoding="async" />
+              </div>
+              <canvas id="view-3d" aria-hidden="true"></canvas>
+            </div>
+            <div class="stage__controls">
+              <div class="orbit-hint mono"><svg aria-hidden="true"><use href="#i-orbit" /></svg><span>ПОТЯНИ, ЧТОБЫ ВРАЩАТЬ</span></div>
+              <button class="reset detail" id="detail" type="button" title="Крупный план" aria-label="Крупный план" aria-pressed="false"><svg aria-hidden="true"><use href="#i-detail" /></svg></button>
+              <button class="reset" id="reset" type="button" title="Исходный ракурс" aria-label="Вернуть исходный ракурс"><svg aria-hidden="true"><use href="#i-reset" /></svg></button>
+            </div>
+          </section>
+        </div>
+
+        <footer class="deck shell">
+          <div class="deck__count mono" aria-hidden="true"><strong id="deck-count">01</strong><span>/</span>03</div>
+          <nav class="chapters" aria-label="Экспонаты">
+            <a class="chapter" href="#spongebob" data-jump="0" aria-current="true"><span class="chapter__line"></span><span class="chapter__caption mono"><span>01</span> SPONGEBOB</span></a>
+            <a class="chapter" href="#patrick" data-jump="1"><span class="chapter__line"></span><span class="chapter__caption mono"><span>02</span> PATRICK</span></a>
+            <a class="chapter" href="#squidward" data-jump="2"><span class="chapter__line"></span><span class="chapter__caption mono"><span>03</span> SQUIDWARD</span></a>
+          </nav>
+          <a class="scroll-next mono" id="scroll-next" href="#patrick" data-jump="1"><span id="scroll-label">ЛИСТАЙ ВНИЗ</span><svg aria-hidden="true"><use href="#i-down" /></svg></a>
+        </footer>
+      </div>
+    </main>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
